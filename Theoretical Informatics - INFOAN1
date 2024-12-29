@@ -1,0 +1,52 @@
+% FSM Transitions for Vending Machine
+transition(q0, 1, q1).
+transition(q0, 0.5, q0_5).
+transition(q0, 0.25, q0_25).
+transition(q1, 1, q2).
+transition(q1, 0.5, q1_5).
+transition(q1_5, 0.5, q2).
+transition(q2, 1, q3).
+transition(q2, 0.5, q2_5).
+transition(q2_5, 0.5, q3).
+
+% Initial and final states
+initial_state(q0).
+final_state(q3).
+
+% Validate a list of coins as input
+validate_vending_machine(Coins) :-
+    initial_state(Start),
+    validate_helper(Start, Coins),
+    write('Payment accepted. Enjoy your drink!'), nl.
+
+validate_helper(CurrentState, []) :-
+    final_state(CurrentState).
+
+validate_helper(CurrentState, [Coin|Rest]) :-
+    transition(CurrentState, Coin, NextState),
+    validate_helper(NextState, Rest).
+
+validate_helper(CurrentState, _) :-
+    write('Error: Invalid transition from state '), write(CurrentState), nl, fail.
+
+% Test cases for vending machine FSM
+test_vending_machine :-
+    % Valid test case: Exact payment
+    write('Test Case 1: Exact payment (1, 1, 1)'), nl,
+    validate_vending_machine([1, 1, 1]), nl,
+
+    % Valid test case: Combination of coins
+    write('Test Case 2: Combination (1, 0.5, 0.5, 1)'), nl,
+    validate_vending_machine([1, 0.5, 0.5, 1]), nl,
+
+    % Invalid test case: Payment not reaching final state
+    write('Test Case 3: Insufficient payment (1, 0.5)'), nl,
+    (validate_vending_machine([1, 0.5]) -> true; write('Payment rejected.')), nl,
+
+    % Invalid test case: Invalid coin input
+    write('Test Case 4: Invalid coin (0.75)'), nl,
+    (validate_vending_machine([0.75]) -> true; write('Payment rejected.')), nl,
+
+    % Valid test case: Exact payment with minimum coins
+    write('Test Case 5: Exact payment (0.5, 0.5, 0.5, 0.5, 1)'), nl,
+    validate_vending_machine([0.5, 0.5, 0.5, 0.5, 1]), nl.
